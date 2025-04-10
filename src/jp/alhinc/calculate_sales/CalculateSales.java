@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,8 @@ public class CalculateSales {
 		}
 
 		// 売上ファイルの連番チェック
+		// OS問わず動作させるため、一律で昇順にソート
+		Collections.sort(rcdFilesList);
 		for (int i = 0; i < rcdFilesList.size() - 1; i++) {
 			int former = Integer.parseInt(rcdFilesList.get(i).getName().substring(0, 8));
 			int latter = Integer.parseInt(rcdFilesList.get(i + 1).getName().substring(0, 8));
@@ -84,6 +87,9 @@ public class CalculateSales {
 		// rcdFilesリストについて、1行ずつ処理
 		// 抽出した売上額を該当する支店の合計金額にそれぞれ加算
 		// 加算処理を売上ファイルの数だけ繰り返す
+
+		// メソッド化を視野に入れているため、売上ファイルの読み込み可否を保持する変数を作成
+		// コーチ了承済
 		boolean readPossibility = false;
 		BufferedReader br = null;
 		for (int i = 0; i < rcdFilesList.size(); i++) {
@@ -107,18 +113,20 @@ public class CalculateSales {
 
 				// ファイル1つ分の情報がリストに入った状態
 
-				// Keyの存在チェック
-				// 1行目（支店コード）が支店定義ファイルに存在しない場合エラー
-				if (!branchNames.containsKey(contentsList.get(0))) {
-					System.out.println(file.getName() + BRANCH_CODE_IS_INVALID);
-					readPossibility = false;
-					return;
-				}
-
+				// ファイルの中身をチェック
+				// フォーマットが合っているか→1行目が正しい支店コードか→2行目が数字かの順
 				// 売上ファイルのフォーマットチェック
 				// 2行でない場合エラー
 				if (contentsList.size() != 2) {
 					System.out.println(file.getName() + FORMAT_IS_INVALID);
+					readPossibility = false;
+					return;
+				}
+
+				// Keyの存在チェック
+				// 1行目（支店コード）が支店定義ファイルに存在しない場合エラー
+				if (!branchNames.containsKey(contentsList.get(0))) {
+					System.out.println(file.getName() + BRANCH_CODE_IS_INVALID);
 					readPossibility = false;
 					return;
 				}
@@ -170,7 +178,6 @@ public class CalculateSales {
 		if (!writeFile(args[0], FILE_NAME_BRANCH_OUT, branchNames, branchSales)) {
 			return;
 		}
-
 	}
 
 	/**
@@ -268,6 +275,7 @@ public class CalculateSales {
 
 		} catch (IOException e) {
 			System.out.println(UNKNOWN_ERROR);
+			return false;
 		} finally {
 			// ファイルを開いている場合
 			if (bw != null) {
