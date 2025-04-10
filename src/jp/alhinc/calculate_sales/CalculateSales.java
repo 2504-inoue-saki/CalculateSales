@@ -211,7 +211,7 @@ public class CalculateSales {
 				// items[0] には支店コード、items[1] には支店名を格納
 				String[] items = line.split(",");
 				//ファイルのフォーマットチェック
-				if ((items.length != 2) || !(items[0].matches("^[0-9]{3}"))) {
+				if ((items.length != 2) || !(items[0].matches("^[0-9]{3}+$"))) {
 					System.out.println(FILE_INVALID_FORMAT);
 					return false;
 				}
